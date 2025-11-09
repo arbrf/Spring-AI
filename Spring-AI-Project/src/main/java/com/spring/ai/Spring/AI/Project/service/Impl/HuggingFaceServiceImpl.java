@@ -39,7 +39,7 @@ public class HuggingFaceServiceImpl implements HuggingFace {
         );
 
         // Send request to Hugging Face router
-        Mono<Map> resp = webClient.post()
+        return webClient.post()
                 .uri("/v1/chat/completions")
                 .bodyValue(body)
                 .retrieve()
@@ -59,7 +59,5 @@ public class HuggingFaceServiceImpl implements HuggingFace {
                     }
                     return Map.of("reply", "(no response from model)");
                 });
-        System.out.println(resp);
-        return resp;
     }
 }
