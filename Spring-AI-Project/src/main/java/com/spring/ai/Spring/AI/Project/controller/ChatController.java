@@ -2,6 +2,7 @@ package com.spring.ai.Spring.AI.Project.controller;
 
 
 
+import com.spring.ai.Spring.AI.Project.response.ChatResponse;
 import com.spring.ai.Spring.AI.Project.service.HuggingFace;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,15 +21,32 @@ public class ChatController {
     }
 
     @PostMapping("/chat")
-    public Mono<ResponseEntity<Map>> chat(@RequestBody Map<String, String> payload) {
+    public Mono<ResponseEntity<ChatResponse>> chat(@RequestBody Map<String, String> payload) {
         String message = payload.get("message");
-        if (message == null || message.isBlank()) {
-            return Mono.just(ResponseEntity.badRequest().body(Map.of("error", "message is required")));
-        }
+
         System.out.println("Message recieved from HuggingFace");
-        return hfService.chat(message)
-                .map(ResponseEntity::ok)
-                .onErrorResume(e -> Mono.just(ResponseEntity.status(500)
-                        .body(Map.of("error", "Failed to call Hugging Face", "details", e.getMessage()))));
+        Mono<ResponseEntity<ChatResponse>> responseEntityMono = hfService.chat(message)
+                .map(response -> {
+                    // ✅ Extract the reply from the Map (since hfService returns Mono<Map>)
+                    String reply = "";
+                    if (response != null && response.containsKey("reply")) {
+                        reply = (String) response.get("reply");
+                    } else {
+                        reply = "(no response)";
+                    }
+
+                    ChatResponse chatResponse = new ChatResponse(reply);
+
+                    // ✅ Print to console
+                    System.out.println("🧠 Model says: " + chatResponse.toString());
+
+                    return ResponseEntity.ok(chatResponse);
+                })
+                .onErrorResume(e -> {
+                    ChatResponse errorResponse = new ChatResponse("Failed to call Hugging Face: " + e.getMessage());
+                    return Mono.just(ResponseEntity.status(500).body(errorResponse));
+                });
+        System.out.println(responseEntityMono);
+        return responseEntityMono;
     }
 }
