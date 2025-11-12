@@ -6,7 +6,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
@@ -15,58 +14,43 @@ import java.util.Map;
 public class HuggingFaceServiceImpl implements HuggingFace {
 
     private final WebClient webClient;
-    private final String apiKey;
 
     public HuggingFaceServiceImpl(@Value("${HF_API_KEY:}") String apiKeyFromProps) {
-        String envKey = System.getenv("HF_API_KEY");
-        this.apiKey = (envKey != null && !envKey.isBlank()) ? envKey : apiKeyFromProps;
-
-        String bearerToken = "Bearer " + this.apiKey;
-        System.out.println(bearerToken);
+        String apiKey = System.getenv("HF_API_KEY");
+        if (apiKey == null || apiKey.isBlank()) apiKey = apiKeyFromProps;
+        System.out.println("Bearer "+apiKey);
         this.webClient = WebClient.builder()
                 .baseUrl("https://router.huggingface.co")
-                .defaultHeader(HttpHeaders.AUTHORIZATION, bearerToken)
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
 
     @Override
-    public Mono<Map> chat(String userMessage) {
-        System.out.println("1️⃣ chat() called with message: " + userMessage);
-        // Build the chat request
+    public Map<String, Object> chat(String userMessage) {
+        System.out.println("🧠 Message: " + userMessage);
+
         Map<String, Object> body = Map.of(
                 "model", "deepseek-ai/DeepSeek-R1:fastest",
-                "messages", List.of(
-                        Map.of("role", "user", "content", userMessage)
-                )
+                "messages", List.of(Map.of("role", "user", "content", userMessage))
         );
 
-        System.out.println("2️⃣ Request body prepared: " + body);
+        try {
+            Map<String, Object> response = webClient.post()
+                    .uri("/v1/chat/completions")
+                    .bodyValue(body)
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block(); // ✅ Blocking call (OK for MVC)
 
-        // Send request to Hugging Face router
-        return webClient.post()
-                .uri("/v1/chat/completions")
-                .bodyValue(body)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .map(response -> {
-                    try {
-                        System.out.println("Response From Hugging face "+response);
-                        List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
-                        System.out.println("6️⃣ choices: " + choices);
-                        if (choices != null && !choices.isEmpty()) {
-                            Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-                            System.out.println("7️⃣ message: " + message);
-                            if (message != null) {
-                                String content = (String) message.get("content");
-                                System.out.println("8️⃣ Final model reply: " + content);
-                                return Map.of("reply", content);
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    return Map.of("reply", "(no response from model)");
-                });
+            // Extract reply
+            var choices = (List<Map<String, Object>>) response.get("choices");
+            var message = (Map<String, Object>) choices.get(0).get("message");
+            return Map.of("reply", message.get("content"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Map.of("reply", "❌ Error: " + e.getMessage());
+        }
     }
 }
