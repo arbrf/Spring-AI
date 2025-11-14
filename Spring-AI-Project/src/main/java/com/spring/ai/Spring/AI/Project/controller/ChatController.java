@@ -4,6 +4,7 @@ package com.spring.ai.Spring.AI.Project.controller;
 
 import com.spring.ai.Spring.AI.Project.response.ChatResponse;
 import com.spring.ai.Spring.AI.Project.service.HuggingFace;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -15,38 +16,44 @@ import java.util.Map;
 public class ChatController {
 
     private final HuggingFace hfService;
+    private final ChatClient chatClient;
 
-    public ChatController(HuggingFace hfService) {
+    public ChatController(HuggingFace hfService,ChatClient chatClient) {
         this.hfService = hfService;
+        this.chatClient=chatClient;
     }
 
     @PostMapping("/chat")
-    public Mono<ResponseEntity<ChatResponse>> chat(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<ChatResponse> chat(@RequestBody Map<String, String> payload) {
         String message = payload.get("message");
+        System.out.println("📩 Message received from Angular: " + message);
 
-        System.out.println("Message recieved from HuggingFace");
-        Mono<ResponseEntity<ChatResponse>> responseEntityMono = hfService.chat(message)
-                .map(response -> {
-                    // ✅ Extract the reply from the Map (since hfService returns Mono<Map>)
-                    String reply = "";
-                    if (response != null && response.containsKey("reply")) {
-                        reply = (String) response.get("reply");
-                    } else {
-                        reply = "(no response)";
-                    }
+        try {
+            // ✅ Call your service method synchronously (block if it returns Mono)
+            Map<String, Object> response = hfService.chat(message); // 👈 blocking call (OK in MVC)
 
-                    ChatResponse chatResponse = new ChatResponse(reply);
+            String reply = "(no response)";
+            if (response != null && response.containsKey("reply")) {
+                reply = (String) response.get("reply");
+            }
 
-                    // ✅ Print to console
-                    System.out.println("🧠 Model says: " + chatResponse.toString());
+            ChatResponse chatResponse = new ChatResponse(reply);
+            System.out.println("🧠 Model says: " + chatResponse.toString());
 
-                    return ResponseEntity.ok(chatResponse);
-                })
-                .onErrorResume(e -> {
-                    ChatResponse errorResponse = new ChatResponse("Failed to call Hugging Face: " + e.getMessage());
-                    return Mono.just(ResponseEntity.status(500).body(errorResponse));
-                });
-        System.out.println(responseEntityMono);
-        return responseEntityMono;
+            return ResponseEntity.ok(chatResponse);
+
+        } catch (Exception e) {
+            ChatResponse errorResponse = new ChatResponse("Failed to call Hugging Face: " + e.getMessage());
+            return ResponseEntity.status(500).body(errorResponse);
+        }
+    }
+
+    @GetMapping("/chatclient")
+    public Map<String, String> chat(@RequestParam String question) {
+        String response = chatClient.prompt()
+                .user(question)
+                .call()
+                .content();
+        return Map.of("question", question, "answer", response);
     }
 }
