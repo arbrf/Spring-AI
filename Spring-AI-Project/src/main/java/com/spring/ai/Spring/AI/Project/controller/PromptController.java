@@ -1,16 +1,21 @@
 package com.spring.ai.Spring.AI.Project.controller;
 
+import org.springframework.core.io.Resource;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +23,13 @@ import java.util.Map;
 @RequestMapping("/prompt")
 public class PromptController {
     private final ChatClient chatClient;
+
+    @Value("classpath:docs/info.txt")
+    private Resource infoFile;
+
+    @Value("classpath:prompt/question.st")
+    private Resource questionTemplateFile;
+
 
     public PromptController(ChatClient chatClient) {
         this.chatClient = chatClient;
@@ -64,4 +76,26 @@ public class PromptController {
         String response = chatClient.prompt(prompt).call().content();
         System.out.println(response);
     }
+
+    @GetMapping("/olympics-2026")
+    public String get2026OlympicData(@RequestParam(value = "message",defaultValue = "Hi waht is your name") String message,
+                                     @RequestParam boolean stuffit) throws IOException {
+        Map<String ,Object> map=new HashMap<>();
+
+        String contextText=stuffit?infoFile.getContentAsString(Charset.defaultCharset()):"";
+        map.put("question",message);
+        map.put("context", contextText);
+
+        String contentAsString = questionTemplateFile.getContentAsString(Charset.defaultCharset());
+        PromptTemplate promptTemplate = new PromptTemplate(contentAsString);
+        Prompt prompt = promptTemplate.create(map);
+        System.out.println("Map Values are "+String.valueOf(map));
+        System.out.println(contentAsString);
+        System.out.println(contextText);
+       String content = chatClient.prompt(prompt).call().content();
+       // String content="Hello";
+        System.out.println("The response is :"+content);
+        return content;
+    }
+
 }
