@@ -23,7 +23,7 @@ public class PromptController {
         this.chatClient = chatClient;
     }
 
-    @GetMapping("chatclient")
+    @GetMapping("/chatclient")
     public Map<String, String> prompt(@RequestParam String question) {
         Prompt prompt=new Prompt(question);
         String response = chatClient.prompt(prompt).call().content();
