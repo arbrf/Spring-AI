@@ -3,6 +3,7 @@ package com.spring.ai.Spring.AI.Project.controller;
 
 
 import com.spring.ai.Spring.AI.Project.response.ChatResponse;
+import com.spring.ai.Spring.AI.Project.service.GroqService;
 import com.spring.ai.Spring.AI.Project.service.HuggingFace;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +19,12 @@ public class ChatController {
     private final HuggingFace hfService;
     private final ChatClient chatClient;
 
-    public ChatController(HuggingFace hfService,ChatClient chatClient) {
+    private final GroqService groqService;
+
+    public ChatController(HuggingFace hfService,ChatClient chatClient,GroqService groqService) {
         this.hfService = hfService;
         this.chatClient=chatClient;
+        this.groqService=groqService;
     }
 
     @PostMapping("/chat")
