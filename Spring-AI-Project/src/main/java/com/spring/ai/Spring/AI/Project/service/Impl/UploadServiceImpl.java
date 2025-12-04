@@ -15,8 +15,10 @@ import java.util.Map;
 public class UploadServiceImpl implements UploadService {
 
 
-    @Value("${embedding.api.url:http://localhost:8082/vector-doc/embed}")
-    private String embeddingApiUrl;
+    @Value("${embedding.api.base-url}")
+    private String baseUrl;
+
+    String embeddingApiUrl = baseUrl + "/vector-doc/embed";
     private final RestTemplate restTemplate = new RestTemplate();
 
     public void processPdfAndSendToEmbedding(String sessionId, MultipartFile pdfFile) {

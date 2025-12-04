@@ -17,13 +17,13 @@ import java.util.Map;
 public class ChatController {
 
     private final HuggingFace hfService;
-    private final ChatClient chatClient;
+
 
     private final GroqService groqService;
 
-    public ChatController(HuggingFace hfService,ChatClient chatClient,GroqService groqService) {
+    public ChatController(HuggingFace hfService,GroqService groqService) {
         this.hfService = hfService;
-        this.chatClient=chatClient;
+
         this.groqService=groqService;
     }
 
@@ -52,12 +52,18 @@ public class ChatController {
         }
     }
 
-    @GetMapping("/chatclient")
+   /* @GetMapping("/chatclient")
     public Map<String, String> chat(@RequestParam String question) {
         String response = chatClient.prompt()
                 .user(question)
                 .call()
                 .content();
+        return Map.of("question", question, "answer", response);
+    }*/
+
+    @GetMapping("/chatclient")
+    public Map<String, String> groqChat(@RequestParam String question,@RequestParam String sessionId) {
+        String response =groqService.chat(question,sessionId);
         return Map.of("question", question, "answer", response);
     }
 }

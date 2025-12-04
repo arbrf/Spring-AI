@@ -1,4 +1,4 @@
-package com.spring.ai.Spring.AI.Project.util;
+package com.spring.ai.Spring.AI.Project.tools;
 
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;

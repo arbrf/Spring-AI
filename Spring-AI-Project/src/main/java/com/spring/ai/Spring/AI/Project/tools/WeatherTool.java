@@ -1,4 +1,4 @@
-package com.spring.ai.Spring.AI.Project.util;
+package com.spring.ai.Spring.AI.Project.tools;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import org.springframework.ai.tool.annotation.Tool;
