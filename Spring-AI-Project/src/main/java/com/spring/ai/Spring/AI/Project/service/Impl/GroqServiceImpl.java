@@ -39,7 +39,7 @@ public class GroqServiceImpl implements GroqService {
         }
         List<Map<String, Object>> context = getRelevantContentApi(prompt);
         StringBuilder sb = new StringBuilder();
-        sb.append("Relevant previous messages:\n");
+        sb.append("Relevant previous messages and content from db:\n");
         for (Map<String, Object> m : context) {
             sb.append("- ").append(m.get("content")).append("\n");
         }
@@ -63,10 +63,10 @@ public class GroqServiceImpl implements GroqService {
         Map<String, Object> params = new HashMap<>();
         params.put("query", text);
         params.put("limit", 5);
-
+        System.out.println("Getting the relevant response ");
         List<Map<String, Object>> response =
                 restTemplate.getForObject(url, List.class, params);
-
+        System.out.println(response);
         return response;
     }
 

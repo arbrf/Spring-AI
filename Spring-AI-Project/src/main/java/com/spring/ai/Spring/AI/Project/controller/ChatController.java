@@ -63,6 +63,7 @@ public class ChatController {
 
     @GetMapping("/chatclient")
     public Map<String, String> groqChat(@RequestParam String question,@RequestParam String sessionId) {
+        System.out.println("Groq chat controller called");
         String response =groqService.chat(question,sessionId);
         return Map.of("question", question, "answer", response);
     }
