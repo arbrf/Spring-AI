@@ -1,7 +1,8 @@
 package com.spring.ai.Spring.AI.Project.tools;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import org.springframework.ai.tool.annotation.Tool;
+
+import org.springaicommunity.mcp.annotation.McpTool;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -14,7 +15,7 @@ public class WeatherTool {
     private static final String BASE_URL = "https://api.weatherapi.com/v1/current.json";
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Tool(name = "getWeather", description = "get real weather details for given city")
+    @McpTool(name = "getWeather", description = "get real weather details for given city")
     public String getWeather(@JsonPropertyDescription("City name") String city)
     {
         System.out.println("The LLM uses my tool");
