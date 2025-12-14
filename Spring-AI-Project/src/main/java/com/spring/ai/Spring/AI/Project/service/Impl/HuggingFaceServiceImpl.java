@@ -18,7 +18,7 @@ public class HuggingFaceServiceImpl implements HuggingFace {
     public HuggingFaceServiceImpl(@Value("${HF_API_KEY:}") String apiKeyFromProps) {
         String apiKey = System.getenv("HF_API_KEY");
         if (apiKey == null || apiKey.isBlank()) apiKey = apiKeyFromProps;
-        System.out.println("Bearer "+apiKey);
+        //System.out.println("Bearer "+apiKey);
         this.webClient = WebClient.builder()
                 .baseUrl("https://router.huggingface.co")
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
