@@ -9,7 +9,7 @@ public class SpringAiApplication {
 	public static void main(String[] args) {
 
 	SpringApplication.run(SpringAiApplication.class, args);
-	System.out.println("Application Started");
+	//System.out.println("Application Started");
 	}
 
 }

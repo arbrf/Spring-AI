@@ -1,14 +1,14 @@
 package com.spring.ai.Spring.AI.Project.tools;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import org.springframework.ai.tool.annotation.Tool;
+import org.springaicommunity.mcp.annotation.McpTool;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class GreetingTool {
 
-    @Tool(
+    @McpTool(
             name = "greetUser",
             description = "Greets the user with a friendly message containing the provided name"
     )
